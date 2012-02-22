@@ -1,0 +1,7 @@
+base   chatter
+author Andreas Gohr
+email  gohr@cosmocode.de
+date   2012-02-22
+name   chatter plugin
+desc   Integrate Salesforce Chatter in DokuWiki
+url    http://www.dokuwiki.org/plugin:chatter
