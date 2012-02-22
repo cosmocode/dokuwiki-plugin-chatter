@@ -15,11 +15,42 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
     private $loginurl;
 
     public function __construct(){
-        if($this->getConf['loginurl'] == 'live'){
-            $this->loginurl = 'https://test.salesforce.com/';
-        }else{
+        if($this->getConf('loginurl') == 'live'){
             $this->loginurl = 'https://login.salesforce.com/';
+        }else{
+            $this->loginurl = 'https://test.salesforce.com/';
         }
+    }
+
+
+    /**
+     * Loads the access token for a user
+     *
+     * If no user is given the currently logged in one is used
+     */
+    public function load_accesstoken($user=null){
+        if(is_null($user)) $user = $_SERVER['REMOTE_USER'];
+        if(!$user) return false;
+
+        $tokenfile = getCacheName($user,'.chatter-auth');
+        if(file_exists($tokenfile)){
+            return trim(io_readFile($tokenfile));
+        }else{
+            return false;
+        }
+    }
+
+    /**
+     * Saves the access token for a user
+     *
+     * If no user is given the currently logged in one is used
+     */
+    public function save_accesstoken($token, $user=null){
+        if(is_null($user)) $user = $_SERVER['REMOTE_USER'];
+        if(!$user) return false;
+
+        $tokenfile = getCacheName($user,'.chatter-auth');
+        io_saveFile($tokenfile,$token);
     }
 
     /**
@@ -43,9 +74,10 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
     /**
      * Finish the the OAuth process
      *
-     * by turning the given code into a permanent authorization code
+     * by turning the given code into a permanent access token
      *
      * @param string $code the code requested by oauth_start()
+     * @return the access token
      */
     public function oauth_finish($code){
         $data = array(
@@ -59,11 +91,12 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
         $url = $this->loginurl.'/services/oauth2/token';
 
         $http = new DokuHTTPClient();
-        $http->debug = 1;
-
         $resp = $http->post($url,$data);
+        if($resp === false) return false;
+        $json = new JSON(JSON_LOOSE_TYPE);
+        $resp = $json->decode($resp);
 
-        dbg($resp);
+        return $resp['access_token'];
     }
 
 }
