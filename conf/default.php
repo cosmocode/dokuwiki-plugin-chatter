@@ -5,4 +5,7 @@
  * @author Andreas Gohr <gohr@cosmocode.de>
  */
 
-//$conf['fixme']    = 'FIXME';
+$conf['loginurl']    = 'sandbox';
+$conf['instanceurl'] = 'https://FIXME.salesforce.com';
+$conf['consumer_key'] = '';
+$conf['consumer_secret'] = '';
