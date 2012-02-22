@@ -6,7 +6,7 @@
  */
 
 $meta['loginurl']        = array('multichoice','_choices' => array('live','sandbox'));
-$meta['instancename']    = array('string','_pattern' => '^https:\/\/.*?\.salesforce.com');
+$meta['instanceurl']     = array('string','_pattern' => '^https:\/\/.*?\.salesforce.com');
 $meta['consumer_key']    = array('string');
 $meta['consumer_secret'] = array('password');
 
