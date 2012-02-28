@@ -8,11 +8,11 @@ session_write_close();
 $plugin = plugin_load('helper','chatter');
 
 if($_GET['code']){
-    $token = $plugin->oauth_finish($_GET['code']);
+    if($plugin->oauth_finish($_GET['code'])){
+        echo '<h2>Authentication successful</h1>';
 
-    if($token){
-        $plugin->save_accesstoken($token);
-        echo '<h1>Authentication successful</h1>';
+    }else{
+        echo 'barf';
     }
 }else{
     $plugin->oauth_start();

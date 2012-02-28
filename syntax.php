@@ -44,18 +44,43 @@ class syntax_plugin_chatter extends DokuWiki_Syntax_Plugin {
 
 
         $hlp = plugin_load('helper','chatter');
-        $token = $hlp->load_accesstoken();
 
-
-        $url = $hlp->getConf('instanceurl').'/services/data/v24.0'.'/chatter/feeds/record/me';
+/*
+        $url = $hlp->getConf('instanceurl').'/services/data/v24.0'.'/chatter/feeds/record/me/feed-items';
         $http = new DokuHTTPClient();
         $http->headers['Authorization'] = 'OAuth '.$token;
         $http->headers['Accept'] = 'application/json';
         $http->debug = 1;
-
         $body = $http->get($url);
-
         dbg($body);
+*/
+
+/*
+        $url = $hlp->getConf('instanceurl').'/services/data/v24.0'.'/chatter/feeds/record/me/feed-items';
+        $data = array(
+            'url'   => 'http://example.com',
+            'urlName' => 'whut?',
+        );
+        $http = new DokuHTTPClient();
+        $http->headers['Authorization'] = 'OAuth '.$token;
+        $http->headers['Accept'] = 'application/json';
+        $http->debug = 1;
+        $body = $http->post($url, $data);
+        dbg($body);
+*/
+
+//        $hlp->apicall('GET','/sobjects');
+
+        // create a record
+        #$hlp->apicall('POST','/sobjects/WikiPage__c',array('name'=>'a test','url__c'=>'http://example.com/foo'));
+        // a0OW00000008vPBMAY
+
+        // list feed items of the record
+        $hlp->apicall('GET','/chatter/feeds/record/a0OW00000008vPBMAY/feed-items');
+
+        // follow item
+        //$hlp->apicall('POST','/chatter/users/me/following',array('subjectId' => 'a0OW00000008vPBMAY'));
+
 
         return true;
     }

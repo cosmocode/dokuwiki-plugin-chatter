@@ -13,6 +13,8 @@ if (!defined('DOKU_INC')) die();
 
 class helper_plugin_chatter extends DokuWiki_Plugin {
     private $loginurl;
+    private $auth = null;
+    private $user;
 
     public function __construct(){
         if($this->getConf('loginurl') == 'live'){
@@ -20,37 +22,42 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
         }else{
             $this->loginurl = 'https://test.salesforce.com/';
         }
+        $this->user = $_SERVER['REMOTE_USER'];
     }
 
+    /**
+     * Set a different user we're authenticating with
+     */
+    public function set_user($user){
+        $this->user = $user;
+        $this->auth = null;
+    }
 
     /**
-     * Loads the access token for a user
-     *
-     * If no user is given the currently logged in one is used
+     * Loads the access info
      */
-    public function load_accesstoken($user=null){
-        if(is_null($user)) $user = $_SERVER['REMOTE_USER'];
-        if(!$user) return false;
+    public function load_auth(){
+        if(!$this->user) return false;
+        if(!is_null($this->auth)) return true;
+        $tokenfile = getCacheName($this->user,'.chatter-auth');
 
-        $tokenfile = getCacheName($user,'.chatter-auth');
         if(file_exists($tokenfile)){
-            return trim(io_readFile($tokenfile));
+            $this->auth = unserialize(io_readFile($tokenfile,false));
+            return true;
         }else{
             return false;
         }
     }
 
     /**
-     * Saves the access token for a user
-     *
-     * If no user is given the currently logged in one is used
+     * Saves the access info
      */
-    public function save_accesstoken($token, $user=null){
-        if(is_null($user)) $user = $_SERVER['REMOTE_USER'];
-        if(!$user) return false;
+    public function save_auth(){
+        if(!$this->user) return false;
+        if(is_null($this->auth)) return false;
 
-        $tokenfile = getCacheName($user,'.chatter-auth');
-        io_saveFile($tokenfile,$token);
+        $tokenfile = getCacheName($this->user,'.chatter-auth');
+        return io_saveFile($tokenfile, serialize($this->auth));
     }
 
     /**
@@ -91,12 +98,72 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
         $url = $this->loginurl.'/services/oauth2/token';
 
         $http = new DokuHTTPClient();
+        $http->headers['Accept'] = 'application/json';
         $resp = $http->post($url,$data);
         if($resp === false) return false;
         $json = new JSON(JSON_LOOSE_TYPE);
         $resp = $json->decode($resp);
 
-        return $resp['access_token'];
+        $this->auth = $resp;
+        return $this->save_auth();
+    }
+
+    /**
+     * request a new auth key
+     */
+    public function oauth_refresh(){
+        if(!$this->load_auth()) return false;
+        $data = array(
+            'grant_type'    => 'refresh_token',
+            'refresh_token' => $this->auth['refresh_token'],
+            'client_id'     => $this->getConf('consumer_key'),
+            'client_secret' => $this->getConf('consumer_secret')
+        );
+
+        $url = $this->loginurl.'/services/oauth2/token?'.buildURLparams($data, '&');
+
+        $http = new DokuHTTPClient();
+        $http->headers['Accept'] = 'application/json';
+        $resp = $http->get($url);
+        if($resp === false) return false;
+        $json = new JSON(JSON_LOOSE_TYPE);
+        $resp = $json->decode($resp);
+
+        $this->auth = $resp;
+        return $this->save_auth();
+    }
+
+    /**
+     * Execute an API call with the current author
+     */
+    public function apicall($method,$endpoint,$data=array()){
+        if(!$this->load_auth()) return false;
+
+        $json = new JSON(JSON_LOOSE_TYPE);
+        $url   = $this->auth['instance_url'].'/services/data/v24.0'.$endpoint;
+
+        $http = new DokuHTTPClient();
+        $http->headers['Authorization'] = 'OAuth '.$token;
+        $http->headers['Accept']        = 'application/json';
+        $http->headers['Content-Type']  = 'application/json';
+        $http->headers['X-PrettyPrint'] = '1';
+
+        $http->debug = 1;
+
+        $data = $json->encode($data);
+        $resp = $http->sendRequest($url, $data, $method);
+        $resp = $json->decode($resp);
+
+        // session expired, request a new one and retry
+        if($resp['errorCode'] == 'INVALID_SESSION_ID'){
+            if($this->oauth_refresh()){
+                return $this->apicall($method,$endpoint,$data);
+            }else{
+                return false;
+            }
+        }
+
+        return $resp;
     }
 
 }
