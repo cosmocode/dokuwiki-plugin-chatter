@@ -137,7 +137,7 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
     /**
      * Execute an API call with the current author
      */
-    public function apicall($method,$endpoint,$data=array()){
+    public function apicall($method,$endpoint,$data=array(),$usejson=true){
         if(!$this->load_auth()) return false;
 
         $json = new JSON(JSON_LOOSE_TYPE);
@@ -146,12 +146,19 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
         $http = new DokuHTTPClient();
         $http->headers['Authorization'] = 'OAuth '.$this->auth['access_token'];
         $http->headers['Accept']        = 'application/json';
-        $http->headers['Content-Type']  = 'application/json';
         $http->headers['X-PrettyPrint'] = '1';
 
         $http->debug = 1;
 
-        if($data) $data = $json->encode($data);
+        if($data){
+            if($usejson){
+                $data = $json->encode($data);
+                $http->headers['Content-Type']  = 'application/json';
+            }
+            // else default to standard POST encoding
+        }
+
+
         $http->sendRequest($url, $data, $method);
         if(!$http->resp_body) return false;
         $resp = $json->decode($http->resp_body);
@@ -187,7 +194,7 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
     }
 
     public function addcomment($cid, $text){
-        $this->apicall('POST','/chatter/feeds/record/'.$cid.'/feed-items/?text='.urlencode($text));
+        $this->apicall('POST','/chatter/feeds/record/'.$cid.'/feed-items/',array('text' => $text),false);
     }
 }
 
