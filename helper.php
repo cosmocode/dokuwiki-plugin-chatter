@@ -123,8 +123,9 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
         $url = $this->loginurl.'/services/oauth2/token?'.buildURLparams($data, '&');
 
         $http = new DokuHTTPClient();
+        $http->debug = 1;
         $http->headers['Accept'] = 'application/json';
-        $resp = $http->get($url);
+        $resp = $http->post($url,array());
         if($resp === false) return false;
         $json = new JSON(JSON_LOOSE_TYPE);
         $resp = $json->decode($resp);
@@ -143,29 +144,51 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
         $url   = $this->auth['instance_url'].'/services/data/v24.0'.$endpoint;
 
         $http = new DokuHTTPClient();
-        $http->headers['Authorization'] = 'OAuth '.$token;
+        $http->headers['Authorization'] = 'OAuth '.$this->auth['access_token'];
         $http->headers['Accept']        = 'application/json';
         $http->headers['Content-Type']  = 'application/json';
         $http->headers['X-PrettyPrint'] = '1';
 
         $http->debug = 1;
 
-        $data = $json->encode($data);
-        $resp = $http->sendRequest($url, $data, $method);
-        $resp = $json->decode($resp);
+        if($data) $data = $json->encode($data);
+        $http->sendRequest($url, $data, $method);
+        if(!$http->resp_body) return false;
+        $resp = $json->decode($http->resp_body);
+        if($http->status < 200 || $http->status > 399) return false;
 
         // session expired, request a new one and retry
-        if($resp['errorCode'] == 'INVALID_SESSION_ID'){
+        #FIXME doesn't work, refresh token expires too
+        /*
+        if($resp[0]['errorCode'] == 'INVALID_SESSION_ID'){
             if($this->oauth_refresh()){
                 return $this->apicall($method,$endpoint,$data);
             }else{
                 return false;
             }
         }
+        */
 
         return $resp;
     }
 
+    public function id2chatter($id){
+        $key = p_get_metadata($id,'plugin chatter');
+        if($key) return $key;
+
+        // no key yet, try to create a new SF object
+        $resp = $this->apicall('POST','/sobjects/WikiPage__c',array('name'=>$id,'url__c'=>wl($id,'',true,'&')));
+        if(!$resp) return false;
+
+        $key = $resp['id']; //FIXME check if correct
+        p_set_metadata($id,array('plugin' => array('chatter' => $key)));
+
+        return $key;
+    }
+
+    public function addcomment($cid, $text){
+        $this->apicall('POST','/chatter/feeds/record/'.$cid.'/feed-items/?text='.urlencode($text));
+    }
 }
 
 // vim:ts=4:sw=4:et:
