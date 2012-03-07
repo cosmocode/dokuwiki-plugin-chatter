@@ -9,13 +9,12 @@ $ID      = cleanID($_GET['id']);
 $CID     = $CHATTER->id2chatter($ID);
 
 
-
 html_header();
 
 if(!$CID){
     html_authrequired();
 }else{
-
+    $FOLLOW  = $CHATTER->follow($CID,(isset($_GET['follow'])?$_GET['follow']:null));
     if($_POST['comment']) $CHATTER->addcomment($_POST['parent'],$_POST['comment']);
 
 
@@ -23,6 +22,7 @@ if(!$CID){
     if(!$ret){
         html_authrequired();
     }else{
+        html_follow();
         html_comments($ret['items']);
         html_commentform();
     }
@@ -30,13 +30,24 @@ if(!$CID){
 
 html_footer();
 
+function html_follow(){
+    global $FOLLOW;
+
+    if($FOLLOW){
+        echo '<a href="frame.php?id='.$ID.'&amp;follow='.hsc($FOLLOW).'" class="button unfollow">Unfollow</a>';
+    }else{
+        echo '<a href="frame.php?id='.$ID.'&amp;follow=1" class="button follow">Follow</a>';
+    }
+
+}
 
 function html_commentform(){
     global $CID;
     echo '<form method="post">';
     echo '<input type="hidden" name="parent" value="'.hsc($CID).'" />';
-    echo '<textarea name="comment"></textarea>';
-    echo '<input type="submit" />';
+    echo '<label for="chatter__comment">Add Comment:</label>';
+    echo '<input type="text" name="comment" id="chatter__comment" /> ';
+    echo '<input type="submit" class="button" />';
     echo '</form>';
 }
 
@@ -48,20 +59,18 @@ function html_comments($items){
         if(!isset($item['actor'])) $item['actor'] = $item['user'];
         #FIXME skip non-comments
 
-        echo '<li id="chatter__comment'.$item['id'].'>';
-        echo '<div class="body">'.hsc($item['body']['text']).'</div>';
-
-        echo '<div class="author">';
-        echo '<img src="'.$item['actor']['photo']['smallPhotoUrl'].'"> ';
-        echo '<div class="name">'.hsc($item['actor']['name']).'</div>';
-        echo '<div class="date">'.dformat(strtotime($item['createdDate'])).'</div>';
+        echo '<li id="chatter__comment'.$item['id'].'">';
+        echo '<img src="'.$item['actor']['photo']['smallPhotoUrl'].'" width="45" height="45" /> ';
+        echo '<div class="body">';
+        echo '<div class="inner">';
+        echo '<b class="author">'.hsc($item['actor']['name']).':</b> ';
+        echo hsc($item['body']['text']);
+        echo '<br /><span class="date">'.dformat(strtotime($item['createdDate'])).'</span>';
         echo '</div>';
-
-
         // recurse for replies
         if(count($item['comments']['comments']))
             html_comments($item['comments']['comments']);
-
+        echo '</div>';
         echo '</li>';
     }
 
@@ -70,12 +79,12 @@ function html_comments($items){
 
 
 function html_header(){
-    echo <<<END
-    <html>
-    <head>
-        <title>Chatter</title>
-    </head>
-    <body>
+    echo '<html>';
+    echo '<head>';
+    echo '<title>Chatter</title>';
+    tpl_metaheaders();
+    echo '</head>';
+    echo '<body id="chatter__window">';
 END;
 }
 
@@ -87,8 +96,6 @@ END;
 }
 
 function html_authrequired(){
-    #FIXME no JS link
-    echo <<<END
-    <a href="javascript:window.open('try.php','auth')">Please login and authorize Chatter access</a>
-END;
+    global $CHATTER;
+    echo '<a href="'.$CHATTER->authurl.'" id="chatter__openauth" target="_blank" class="button">Please login and authorize Chatter access</a>';
 }

@@ -15,6 +15,7 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
     private $loginurl;
     private $auth = null;
     private $user;
+    public  $authurl;
 
     public function __construct(){
         if($this->getConf('loginurl') == 'live'){
@@ -23,6 +24,12 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
             $this->loginurl = 'https://test.salesforce.com/';
         }
         $this->user = $_SERVER['REMOTE_USER'];
+        $this->authurl = DOKU_URL.'lib/plugins/chatter/auth.php';
+    }
+
+    public function tpl_frame(){
+        global $ID;
+        echo '<iframe src="'.DOKU_BASE.'lib/plugins/chatter/frame.php?id='.$ID.'" id="chatter__frame"></iframe>';
     }
 
     /**
@@ -70,8 +77,8 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
         $data = array(
             'response_type' => 'code',
             'client_id'     => $this->getConf('consumer_key'),
-            'redirect_uri'  => 'https://localhost/dw-2011-11-07/lib/plugins/chatter/try.php',
-            'display'       => 'page', # popup, touch
+            'redirect_uri'  => $this->authurl,
+            'display'       => 'popup',
         );
 
         $url = $this->loginurl.'/services/oauth2/authorize?'.buildURLparams($data, '&');
@@ -92,7 +99,7 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
             'grant_type' => 'authorization_code',
             'client_id'     => $this->getConf('consumer_key'),
             'client_secret' => $this->getConf('consumer_secret'),
-            'redirect_uri'  => 'https://localhost/dw-2011-11-07/lib/plugins/chatter/try.php', #why??
+            'redirect_uri'  => $this->authurl,
         );
 
         $url = $this->loginurl.'/services/oauth2/token';
@@ -121,9 +128,7 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
         );
 
         $url = $this->loginurl.'/services/oauth2/token?'.buildURLparams($data, '&');
-
         $http = new DokuHTTPClient();
-        $http->debug = 1;
         $http->headers['Accept'] = 'application/json';
         $resp = $http->post($url,array());
         if($resp === false) return false;
@@ -148,7 +153,7 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
         $http->headers['Accept']        = 'application/json';
         $http->headers['X-PrettyPrint'] = '1';
 
-        $http->debug = 1;
+#        $http->debug = 1;
 
         if($data){
             if($usejson){
@@ -158,15 +163,11 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
             // else default to standard POST encoding
         }
 
-
         $http->sendRequest($url, $data, $method);
         if(!$http->resp_body) return false;
         $resp = $json->decode($http->resp_body);
-        if($http->status < 200 || $http->status > 399) return false;
 
         // session expired, request a new one and retry
-        #FIXME doesn't work, refresh token expires too
-        /*
         if($resp[0]['errorCode'] == 'INVALID_SESSION_ID'){
             if($this->oauth_refresh()){
                 return $this->apicall($method,$endpoint,$data);
@@ -174,11 +175,17 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
                 return false;
             }
         }
-        */
+
+        if($http->status < 200 || $http->status > 399) return false;
 
         return $resp;
     }
 
+    /**
+     * Get the Chatter ID for a given wiki ID
+     *
+     * Creates the Chatter ID if not exists, yet
+     */
     public function id2chatter($id){
         $key = p_get_metadata($id,'plugin chatter');
         if($key) return $key;
@@ -187,12 +194,45 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
         $resp = $this->apicall('POST','/sobjects/WikiPage__c',array('name'=>$id,'url__c'=>wl($id,'',true,'&')));
         if(!$resp) return false;
 
-        $key = $resp['id']; //FIXME check if correct
+        $key = $resp['id'];
         p_set_metadata($id,array('plugin' => array('chatter' => $key)));
 
         return $key;
     }
 
+    /**
+     * Set and get the follow state for a given Chatter ID
+     *
+     * Use a subscription ID in $set to unfollow by deleting this subscription
+     * use a '1' to subscribe to a ressource. Keep null to only query the follow
+     * state
+     *
+     * @param string $cid Chatter ID
+     * @param string $set Subscription ID
+     * @returns mixed false or a subscription ID
+     */
+    public function follow($cid, $set=null){
+        // set state
+        if(is_string($set) && strlen($set) > 1){
+            // unsubscribe
+            $this->apicall('DELETE','/chatter/subscriptions/'.$set);
+        }elseif(!is_null($set)){
+            // subscribe
+            $this->apicall('POST','/chatter/users/me/following',array('subjectId' => $cid));
+        }
+
+        // read state
+        $resp = $this->apicall('GET','/chatter/records/'.$cid.'/followers');
+        if(isset($resp['mySubscription'])){
+            return $resp['mySubscription']['id'];
+        }
+
+        return false;
+    }
+
+    /**
+     * Attach a comment to a Chatter object
+     */
     public function addcomment($cid, $text){
         $this->apicall('POST','/chatter/feeds/record/'.$cid.'/feed-items/',array('text' => $text),false);
     }
