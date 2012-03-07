@@ -29,6 +29,7 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
 
     public function tpl_frame(){
         global $ID;
+        if(!$_SERVER['REMOTE_USER']) return;
         echo '<iframe src="'.DOKU_BASE.'lib/plugins/chatter/frame.php?id='.$ID.'" id="chatter__frame"></iframe>';
     }
 
