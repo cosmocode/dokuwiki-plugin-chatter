@@ -188,7 +188,8 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
      * Creates the Chatter ID if not exists, yet
      */
     public function id2chatter($id){
-        $key = p_get_metadata($id,'plugin chatter');
+        $inst = md5($this->auth['instance_url'].$this->loginurl); //unique key per instance/login url
+        $key  = p_get_metadata($id,"plugin chatter $inst");
         if($key) return $key;
 
         // no key yet, try to create a new SF object
@@ -196,7 +197,7 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
         if(!$resp) return false;
 
         $key = $resp['id'];
-        p_set_metadata($id,array('plugin' => array('chatter' => $key)));
+        p_set_metadata($id,array('plugin' => array('chatter' => array($inst => $key))));
 
         return $key;
     }
