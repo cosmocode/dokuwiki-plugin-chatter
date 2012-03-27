@@ -1,0 +1,59 @@
+
+
+===== Setup at Salesforce =====
+
+  - Login
+  - Click on your name in the top toolbar
+  - Click on ''Setup''
+  - Choose ''Develop'' from the left hand navigation
+  - Click ''Remote Access''
+  - Click ''New''
+  - Fill Form
+    * use the https://example.com/dokuwiki/lib/plugins/chatter/auth.php
+  - Configure the plugin in the configuration manager using the data given
+
+Create new SObject
+
+
+  - Login
+  - Click on your name in the top toolbar
+  - Click on ''Setup''
+  - Choose ''Create'' from the left hand navigation
+  - Select ''Objects''
+  - Click new Custom Object
+    * Label: WikiPage
+    * Plural Label: WikiPages
+    * Object Name: WikiPage <- this one is important and needs to be named like this
+    * Record Name: WikiPage Name
+    * Data Type: Text
+  - Save
+  - Choose "New" in "Custom Fields & Relationships"
+    * DataType: Url
+    * Field Label: URL
+    * Field Name: url <- this one is important and needs to be named like this
+
+
+Make chatter aware
+
+  - Login
+  - Click on your name in the top toolbar
+  - Click on ''Setup''
+  - Choose ''Customize'' from the left hand navigation
+  - Select ''Chatter'' from the left hand navigation
+  - Click ''Customize field tracking''
+  - Select "WikiPage" from list
+  - ''Enable Field Tracking''
+  - no need to pick fields
+
+===== Setup in Wiki =====
+
+Put the following code somewhere in your template.
+
+<code php>
+<?php
+    if($ACT == 'show'){
+        $chatter = plugin_load('helper','chatter');
+        $chatter->tpl_frame();
+    }
+?>
+</code>
