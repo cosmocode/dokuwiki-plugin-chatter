@@ -188,7 +188,7 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
      * Creates the Chatter ID if not exists, yet
      */
     public function id2chatter($id){
-        $inst = md5($this->auth['instance_url'].$this->loginurl); //unique key per instance/login url
+        $inst = $this->getConf('consumer_key'); //unique key per setup
         $key  = p_get_metadata($id,"plugin chatter $inst");
         if($key) return $key;
 
