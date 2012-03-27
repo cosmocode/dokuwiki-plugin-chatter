@@ -189,7 +189,7 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
      */
     public function id2chatter($id){
         $inst = $this->getConf('consumer_key'); //unique key per setup
-        $key  = p_get_metadata($id,"plugin chatter $inst");
+        $key  = p_get_metadata($id,"plugin chatter-$inst");
         if($key) return $key;
 
         // no key yet, try to create a new SF object
@@ -197,7 +197,7 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
         if(!$resp) return false;
 
         $key = $resp['id'];
-        p_set_metadata($id,array('plugin' => array('chatter' => array($inst => $key))));
+        p_set_metadata($id,array('plugin' => array("chatter-$inst" => $key)));
 
         return $key;
     }

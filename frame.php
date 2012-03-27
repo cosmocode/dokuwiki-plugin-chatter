@@ -10,6 +10,7 @@ $CID     = $CHATTER->id2chatter($ID);
 
 
 html_header();
+echo "<!-- $CID -->";
 
 if(!$CID){
     html_authrequired();
@@ -32,6 +33,7 @@ html_footer();
 
 function html_follow(){
     global $FOLLOW;
+    global $ID;
 
     if($FOLLOW){
         echo '<a href="frame.php?id='.$ID.'&amp;follow='.hsc($FOLLOW).'" class="button unfollow">Unfollow</a>';
@@ -57,7 +59,7 @@ function html_comments($items){
 
     foreach($items as $item){
         if(!isset($item['actor'])) $item['actor'] = $item['user'];
-        #FIXME skip non-comments
+        if($item['type'] == 'TrackedChange') continue;
 
         echo '<li id="chatter__comment'.$item['id'].'">';
         echo '<img src="'.$item['actor']['photo']['smallPhotoUrl'].'" width="45" height="45" /> ';
