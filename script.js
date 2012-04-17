@@ -8,29 +8,20 @@ jQuery(function(){
 
     // toggle support
     var $iframe = jQuery('#chatter__frame');
+    var $headln = jQuery('#chatter__headline');
     if($iframe.length){
         var cookie = DokuCookie.getValue('chatter');
         if(!cookie) cookie = 'none';
         $iframe.css('display',cookie);
 
-        var img = document.createElement('img');
-        img.id = 'chatter__toggle';
-        img.title = LANG.plugins.chatter.toggle;
-        if(cookie == 'none'){
-            img.src = DOKU_BASE+'lib/plugins/chatter/pix/down.png';
-        }else{
-            img.src = DOKU_BASE+'lib/plugins/chatter/pix/up.png';
+        if($iframe.css('display') == 'none'){
+            $headln.addClass('chatter_closed');
         }
 
-        $iframe.before(img);
-        jQuery(img).click(function(){
+        $headln.click(function(){
             $iframe.slideToggle('fast',function(){
                 DokuCookie.setValue('chatter',$iframe.css('display'));
-                if($iframe.css('display') == 'none'){
-                    img.src = DOKU_BASE+'lib/plugins/chatter/pix/down.png';
-                }else{
-                    img.src = DOKU_BASE+'lib/plugins/chatter/pix/up.png';
-                }
+                $headln.toggleClass('chatter_closed');
             });
         });
     }

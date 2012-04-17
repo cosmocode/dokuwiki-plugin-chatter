@@ -36,15 +36,15 @@
 }
 
 #chatter__headline {
-    float: left;
+    cursor: pointer;
+    padding-left: 20px;
+    background: transparent url(pix/down.png) center left no-repeat;
 }
 
-#chatter__toggle {
-    color: __link__;
-    cursor: pointer;
-    float: left;
-    margin: 5px;
+#chatter__headline.chatter_closed {
+    background-image: url(pix/up.png);
 }
+
 
 #chatter__frame {
     border: none;
