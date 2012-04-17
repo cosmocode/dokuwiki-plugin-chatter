@@ -35,6 +35,17 @@
     float: right;
 }
 
+#chatter__headline {
+    float: left;
+}
+
+#chatter__toggle {
+    color: __link__;
+    cursor: pointer;
+    float: left;
+    margin: 5px;
+}
+
 #chatter__frame {
     border: none;
     width: 100%;

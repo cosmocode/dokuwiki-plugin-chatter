@@ -33,6 +33,7 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
         $nochatter = p_get_metadata($ID,'plugin nochatter');
         if($nochatter) return;
 
+        echo '<h2 id="chatter__headline">'.$this->getLang('headline').'</h2>';
         echo '<iframe src="'.DOKU_BASE.'lib/plugins/chatter/frame.php?id='.$ID.'" id="chatter__frame"></iframe>';
     }
 
