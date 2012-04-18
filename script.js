@@ -16,12 +16,15 @@ jQuery(function(){
 
         if($iframe.css('display') == 'none'){
             $headln.addClass('chatter_closed');
+        }else{
+            $headln.addClass('chatter_open');
         }
 
         $headln.click(function(){
             $iframe.slideToggle('fast',function(){
                 DokuCookie.setValue('chatter',$iframe.css('display'));
                 $headln.toggleClass('chatter_closed');
+                $headln.toggleClass('chatter_open');
             });
         });
     }

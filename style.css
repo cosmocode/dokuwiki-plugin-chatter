@@ -38,11 +38,13 @@
 #chatter__headline {
     cursor: pointer;
     padding-left: 20px;
-    background: transparent url(pix/down.png) center left no-repeat;
 }
 
-#chatter__headline.chatter_closed {
-    background-image: url(pix/up.png);
+.chatter_open {
+    background: transparent url(pix/down.png) center left no-repeat;
+}
+.chatter_closed {
+    background: transparent url(pix/up.png) center left no-repeat;
 }
 
 
