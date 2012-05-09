@@ -30,3 +30,30 @@ jQuery(function(){
     }
 
 });
+
+jQuery(function() {
+
+    jQuery('#chatter__window .chatter_comment').click(function(){
+
+        jQuery('#chatter__window #chatter__commentjs').remove();
+
+        // get chatter id out of parents id
+        var container = jQuery(this).parents('li:first');
+        var cid = container.attr('id').substring(16);
+
+        var element = '<div id="chatter__commentjs">' +
+            '<form method="post">' +
+            '<input type="hidden" name="parent" value="' +cid+ '" />' +
+            '<label for="chatter__commentjs">Add Comment:</label>' +
+            '<input type="text" name="subcomment" id="chatter__comment" />' +
+            '<input type="submit" class="button" />' +
+            '</form></div>';
+
+
+        container.find('.body:first').append(element);
+        container.find('#chatter__comment').focus();
+        container.find('#chatter__comment')[0].scrollIntoView();
+    });
+
+
+});

@@ -242,6 +242,10 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
     public function addcomment($cid, $text){
         $this->apicall('POST','/chatter/feeds/record/'.$cid.'/feed-items/',array('text' => $text),false);
     }
+
+    public function addSubComment($cid, $text){
+        $this->apicall('POST','/chatter/feed-items/'.$cid.'/comments',array('text' => $text),false);
+    }
 }
 
 // vim:ts=4:sw=4:et:

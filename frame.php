@@ -16,7 +16,11 @@ if(!$CID){
     html_authrequired();
 }else{
     $FOLLOW  = $CHATTER->follow($CID,(isset($_GET['follow'])?$_GET['follow']:null));
-    if($_POST['comment']) $CHATTER->addcomment($_POST['parent'],$_POST['comment']);
+    if($_POST['comment']){
+        $CHATTER->addcomment($_POST['parent'],$_POST['comment']);
+    } elseif ($_POST['subcomment']) {
+        $CHATTER->addSubComment($_POST['parent'],$_POST['subcomment']);
+    }
 
 
     $ret = $CHATTER->apicall('GET','/chatter/feeds/record/'.$CID.'/feed-items');
@@ -24,7 +28,7 @@ if(!$CID){
         html_authrequired();
     }else{
         html_follow();
-        html_comments($ret['items']);
+        html_comments($CID, $ret['items']);
         html_commentform();
     }
 }
@@ -43,18 +47,27 @@ function html_follow(){
 
 }
 
-function html_commentform(){
+function html_commentform($id = false){
     global $CID;
+    $subComment = true;
+    if (!$id) {
+        $id = $CID;
+        $subComment = false;
+    }
     echo '<form method="post">';
-    echo '<input type="hidden" name="parent" value="'.hsc($CID).'" />';
+    echo '<input type="hidden" name="parent" value="'.hsc($id).'" />';
     echo '<label for="chatter__comment">Add Comment:</label>';
-    echo '<input type="text" name="comment" id="chatter__comment" /> ';
+    if ($subComment) {
+        echo '<input type="text" name="subcomment" id="chatter__comment" /> ';
+    } else {
+        echo '<input type="text" name="comment" id="chatter__comment" /> ';
+    }
     echo '<input type="submit" class="button" />';
     echo '</form>';
 }
 
 
-function html_comments($items){
+function html_comments($id, $items, $comments = true){
     echo '<ul>';
 
     foreach($items as $item){
@@ -62,18 +75,25 @@ function html_comments($items){
         if($item['type'] == 'TrackedChange') continue;
 
         echo '<li id="chatter__comment'.$item['id'].'">';
-        echo '<img src="'.$item['actor']['photo']['smallPhotoUrl'].'" width="45" height="45" /> ';
-        echo '<div class="body">';
-        echo '<div class="inner">';
-        echo '<b class="author">'.hsc($item['actor']['name']).':</b> ';
-        echo hsc($item['body']['text']);
-        echo '<br /><span class="date">'.dformat(strtotime($item['createdDate'])).'</span>';
+        echo '  <img src="'.$item['actor']['photo']['smallPhotoUrl'].'" width="45" height="45" /> ';
+        echo '  <div class="body">';
+        echo '    <div class="inner">';
+        echo        '<b class="author">'.hsc($item['actor']['name']).':</b> ';
+        echo        hsc($item['body']['text']);
+        echo        '<br /><span class="date">'.dformat(strtotime($item['createdDate'])).'</span>';
+        if ($comments && !count($item['comments']['comments'])) {
+            echo '<a class="chatter_comment">Comment</a>';
+        }
         echo '</div>';
         // recurse for replies
         if(count($item['comments']['comments']))
-            html_comments($item['comments']['comments']);
+            html_comments($item['id'], $item['comments']['comments'], false);
         echo '</div>';
         echo '</li>';
+    }
+
+    if (!$comments) {
+        html_commentform($id);
     }
 
     echo '</ul>';
