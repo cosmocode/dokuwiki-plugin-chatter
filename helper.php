@@ -30,6 +30,7 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
     public function tpl_frame(){
         global $ID;
         if(!$_SERVER['REMOTE_USER']) return;
+        if(!page_exists($ID)) return;
         $nochatter = p_get_metadata($ID,'plugin nochatter');
         if($nochatter) return;
 
@@ -197,7 +198,12 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
         if($key) return $key;
 
         // no key yet, try to create a new SF object
-        $resp = $this->apicall('POST','/sobjects/WikiPage__c',array('name'=>$id,'url__c'=>wl($id,'',true,'&')));
+        $name = trim(p_get_first_heading($id));
+        if($name === '') {
+            $name = $id;
+        }
+
+        $resp = $this->apicall('POST','/sobjects/WikiPage__c',array('name'=>$name,'url__c'=>wl($id,'',true,'&')));
         if(!$resp) return false;
 
         $key = $resp['id'];
