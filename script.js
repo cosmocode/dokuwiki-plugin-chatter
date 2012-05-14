@@ -52,7 +52,6 @@ jQuery(function() {
 
         container.find('.body:first').append(element);
         container.find('#chatter__comment').focus();
-        container.find('#chatter__comment')[0].scrollIntoView();
     });
 
 
