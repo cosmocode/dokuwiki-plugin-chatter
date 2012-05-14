@@ -42,12 +42,12 @@ jQuery(function() {
         var cid = container.attr('id').substring(16);
 
         var element = '<div id="chatter__commentjs">' +
-            '<form method="post">' +
+            '<form method="post"><div>' +
             '<input type="hidden" name="parent" value="' +cid+ '" />' +
             '<label for="chatter__commentjs">Add Comment:</label>' +
             '<input type="text" name="subcomment" id="chatter__comment" />' +
             '<input type="submit" class="button" />' +
-            '</form></div>';
+            '</div></form></div>';
 
 
         container.find('.body:first').append(element);

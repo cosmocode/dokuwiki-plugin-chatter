@@ -3,13 +3,17 @@
 }
 
 #chatter__window ul {
-    margin: 0;
+    margin: 0 0;
     padding: 0;
 }
 
 #chatter__window ul li {
     list-style-type: none;
     margin: 0;
+}
+
+#chatter__window ul li form div {
+    margin-bottom: 2em;
 }
 
 #chatter__window ul li img {
@@ -67,9 +71,27 @@
 }
 
 #chatter__window .chatter_comment {
-    color: __extern__;
+    color: __link__;
     text-decoration: underline;
     cursor: pointer;
     margin-left: 1em;
+    font-size: 12px;
 }
 
+#chatter__window .like {
+    color: __link__;
+    text-decoration: underline;
+    cursor: pointer;
+    margin-left: 1em;
+    background: none;
+    border: 0;
+    padding: 0;
+    font-size: 12px;
+}
+
+#chatter__window .likes {
+    margin-left: 1.1em;
+    padding-left: 1em;
+    background: url(pix/like.png) no-repeat 0 0.2em;
+    font-size: 12px;
+}

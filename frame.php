@@ -11,7 +11,6 @@ $CID     = $CHATTER->id2chatter($ID);
 
 html_header();
 echo "<!-- $CID -->";
-
 if(!$CID){
     html_authrequired();
 }else{
@@ -20,6 +19,10 @@ if(!$CID){
         $CHATTER->addcomment($_POST['parent'],$_POST['comment']);
     } elseif ($_POST['subcomment']) {
         $CHATTER->addSubComment($_POST['parent'],$_POST['subcomment']);
+    } elseif ($_POST['like']) {
+        $CHATTER->like($_POST['like'], isset($_POST['subLike']));
+    } elseif ($_POST['unlike']) {
+        $CHATTER->unlike($_POST['unlike']);
     }
 
 
@@ -54,7 +57,7 @@ function html_commentform($id = false){
         $id = $CID;
         $subComment = false;
     }
-    echo '<form method="post">';
+    echo '<form method="post"><div>';
     echo '<input type="hidden" name="parent" value="'.hsc($id).'" />';
     echo '<label for="chatter__comment">Add Comment:</label>';
     if ($subComment) {
@@ -63,7 +66,7 @@ function html_commentform($id = false){
         echo '<input type="text" name="comment" id="chatter__comment" /> ';
     }
     echo '<input type="submit" class="button" />';
-    echo '</form>';
+    echo '</div></form>';
 }
 
 
@@ -81,9 +84,21 @@ function html_comments($id, $items, $comments = true){
         echo        '<b class="author">'.hsc($item['actor']['name']).':</b> ';
         echo        hsc($item['body']['text']);
         echo        '<br /><span class="date">'.dformat(strtotime($item['createdDate'])).'</span>';
+
         if ($comments && !count($item['comments']['comments'])) {
             echo '<a class="chatter_comment">Comment</a>';
         }
+
+        if ($item['myLike'] === null) {
+            html_like($item['id'], !$comments);
+        } else {
+            html_unlike($item['myLike']['id']);
+        }
+
+        if ($item['likes']['total'] > 0) {
+            echo '<span class="likes">' . $item['likes']['total'] . ' person</span>';
+        }
+
         echo '</div>';
         // recurse for replies
         if(count($item['comments']['comments']))
@@ -91,12 +106,29 @@ function html_comments($id, $items, $comments = true){
         echo '</div>';
         echo '</li>';
     }
+    echo '</ul>';
 
     if (!$comments) {
         html_commentform($id);
     }
 
-    echo '</ul>';
+}
+
+function html_like($id, $subLike = false) {
+    echo '<form method="post">';
+    echo '<input type="hidden" name="like" value="'.hsc($id).'" />';
+    if ($subLike) {
+        echo '<input type="hidden" name="subLike" value="1" />';
+    }
+    echo '<input type="submit" class="like" value="Like" />';
+    echo '</form>';
+}
+
+function html_unlike($id) {
+    echo '<form method="post">';
+    echo '<input type="hidden" name="unlike" value="' .hsc($id). '" />';
+    echo '<input type="submit" class="like" value="Unlike" />';
+    echo '</form>';
 }
 
 

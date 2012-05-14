@@ -252,6 +252,18 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
     public function addSubComment($cid, $text){
         $this->apicall('POST','/chatter/feed-items/'.$cid.'/comments',array('text' => $text),false);
     }
+
+    public function unlike($id){
+        $this->apicall('DELETE','/chatter/likes/' . $id);
+    }
+
+    public function like($id, $subComment){
+        if (!$subComment){
+            $this->apicall('POST','/chatter/feed-items/' . $id . '/likes');
+        }else{
+            $this->apicall('POST','/chatter/comments/'. $id .'/likes');
+        }
+    }
 }
 
 // vim:ts=4:sw=4:et:
