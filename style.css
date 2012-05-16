@@ -78,6 +78,10 @@
     font-size: 12px;
 }
 
+#chatter__window form {
+    display: inline;
+}
+
 #chatter__window input.like {
     color: __link__;
     text-decoration: underline;
