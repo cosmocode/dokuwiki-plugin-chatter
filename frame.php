@@ -96,7 +96,7 @@ function html_comments($id, $items, $comments = true){
         }
 
         if ($item['likes']['total'] > 0) {
-            echo '<span class="likes">' . $item['likes']['total'] . ' person</span>';
+            echo '<span class="likes">' . $item['likes']['total'] . ' person like this</span>';
         }
 
         echo '</div>';

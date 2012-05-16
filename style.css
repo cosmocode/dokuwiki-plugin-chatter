@@ -78,7 +78,7 @@
     font-size: 12px;
 }
 
-#chatter__window .like {
+#chatter__window input.like {
     color: __link__;
     text-decoration: underline;
     cursor: pointer;
