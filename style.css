@@ -99,3 +99,8 @@
     background: url(pix/like.png) no-repeat 0 0.2em;
     font-size: 12px;
 }
+#chatter__window .chatter_comment_text {
+    width: 25em;
+    height: 3em;
+    vertical-align: top;
+}

@@ -32,7 +32,7 @@ jQuery(function(){
 });
 
 jQuery(function() {
-
+    var formId = 0;
     jQuery('#chatter__window .chatter_comment').click(function(){
 
         jQuery('#chatter__window #chatter__commentjs').remove();
@@ -41,17 +41,18 @@ jQuery(function() {
         var container = jQuery(this).parents('li:first');
         var cid = container.attr('id').substring(16);
 
+        formId++;
         var element = '<div id="chatter__commentjs">' +
             '<form method="post"><div>' +
             '<input type="hidden" name="parent" value="' +cid+ '" />' +
-            '<label for="chatter__commentjs">Add Comment:</label>' +
-            '<input type="text" name="subcomment" id="chatter__comment" />' +
+            '<label for="chatter__commentjs' + formId + '">Add Comment:</label>' +
+            '<textarea name="subcomment" class="chatter_comment_text" id="chatter__commentjs' + formId + '"></textarea>' +
             '<input type="submit" class="button" />' +
             '</div></form></div>';
 
 
         container.find('.body:first').append(element);
-        container.find('#chatter__comment').focus();
+        container.find('.chatter_comment_text').focus();
     });
 
 

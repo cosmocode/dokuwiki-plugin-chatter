@@ -53,17 +53,22 @@ function html_follow(){
 function html_commentform($id = false){
     global $CID;
     $subComment = true;
+
     if (!$id) {
         $id = $CID;
         $subComment = false;
     }
+
+    static $fieldId = 0;
+    $fieldId++;
+
     echo '<form method="post"><div>';
     echo '<input type="hidden" name="parent" value="'.hsc($id).'" />';
-    echo '<label for="chatter__comment">Add Comment:</label>';
+    echo '<label for="chatter__comment'. $fieldId .'">Add Comment:</label>';
     if ($subComment) {
-        echo '<input type="text" name="subcomment" id="chatter__comment" /> ';
+        echo '<textarea name="subcomment" class="chatter_comment_text" id="chatter__comment'. $fieldId .'"></textarea>';
     } else {
-        echo '<input type="text" name="comment" id="chatter__comment" /> ';
+        echo '<textarea name="comment" class="chatter_comment_text" id="chatter__comment'. $fieldId .'"></textarea>';
     }
     echo '<input type="submit" class="button" />';
     echo '</div></form>';
