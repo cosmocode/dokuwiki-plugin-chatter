@@ -27,7 +27,7 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
         $this->authurl = DOKU_URL.'lib/plugins/chatter/auth.php';
     }
 
-    public function tpl_frame(){
+    public function tpl_frame() {
         global $ID;
         if(!$_SERVER['REMOTE_USER']) return;
         if(!page_exists($ID)) return;
@@ -149,6 +149,10 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
      * Execute an API call with the current author
      */
     public function apicall($method,$endpoint,$data=array(),$usejson=true){
+        global $auth;
+        if (is_a($auth, 'auth_sfauth')) {
+            return $auth->apicall($method,$endpoint,$data,$usejson);
+        }
         if(!$this->load_auth()) return false;
 
         $json = new JSON(JSON_LOOSE_TYPE);
