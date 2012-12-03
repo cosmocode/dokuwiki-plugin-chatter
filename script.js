@@ -1,5 +1,4 @@
 jQuery(function(){
-
     jQuery('#chatter__openauth').click(function(e){
         window.open(this.href,'oauth','width=660,height=490');
         e.preventDefault();
@@ -28,7 +27,6 @@ jQuery(function(){
             });
         });
     }
-
 });
 
 jQuery(function() {
@@ -54,6 +52,61 @@ jQuery(function() {
         container.find('.body:first').append(element);
         container.find('.chatter_comment_text').focus();
     });
+});
 
+jQuery(function() {
+
+    function split( val ) {
+        return val.split( /\s+/ );
+    }
+    function extractLast( term ) {
+        return split( term ).pop();
+    }
+
+    jQuery('.chatter_comment_text')
+        .keydown(function( event ) {
+            if ( event.keyCode === jQuery.ui.keyCode.TAB &&
+                jQuery( this ).data( "autocomplete" ).menu.active ) {
+                event.preventDefault();
+            }
+        })
+        .autocomplete({
+            minLength: 0,
+            source: function (request, response) {
+                jQuery.ajax({
+                    url:DOKU_BASE + '/lib/exe/ajax.php?call=chatter_autocomplete',
+                    data:{term : extractLast( request.term )},
+                    dataType:"json",
+                    success: function(data) {
+                        response(data);
+                    },
+                    error: function() {
+                        response([])
+                    }
+                });
+            },
+            focus: function() {
+                // prevent value inserted on focus
+                return false;
+            },
+            select: function( event, ui ) {
+                var terms = split( this.value );
+                // remove the current input
+                terms.pop();
+                // add the selected item
+                terms.push( '@[' + ui.item.label + ']' );
+                // add placeholder to get the comma-and-space at the end
+                terms.push( "" );
+                this.value = terms.join( " " );
+                jQuery('<input/>', {type:'hidden', name: 'mention['+ui.item.label+']', value:ui.item.value})
+                    .appendTo(jQuery(this).parents('form'));
+                return false;
+            }
+        });
+    /*jQuery('.chatter_comment_text').bind('autocompletesearch', function(event, ui) {
+            console.log(event);
+            console.log(ui);
+
+        });*/
 
 });

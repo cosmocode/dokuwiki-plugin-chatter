@@ -71,6 +71,7 @@ function html_commentform($id = false){
         echo '<textarea name="comment" class="chatter_comment_text" id="chatter__comment'. $fieldId .'"></textarea>';
     }
     echo '<input type="submit" class="button" />';
+    echo '<ul class="suggest"></ul>';
     echo '</div></form>';
 }
 

@@ -250,11 +250,15 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
      * Attach a comment to a Chatter object
      */
     public function addcomment($cid, $text){
-        $this->apicall('POST','/chatter/feeds/record/'.$cid.'/feed-items/',array('text' => $text),false);
+        $mentions = $this->getMentions();
+        $data = array('body' => $this->processText($text, $mentions));
+        $this->apicall('POST','/chatter/feeds/record/'.$cid.'/feed-items/',$data);
     }
 
     public function addSubComment($cid, $text){
-        $this->apicall('POST','/chatter/feed-items/'.$cid.'/comments',array('text' => $text),false);
+        $mentions = $this->getMentions();
+        $data = array('body' => $this->processText($text, $mentions));
+        $this->apicall('POST','/chatter/feed-items/'.$cid.'/comments',$data);
     }
 
     public function unlike($id){
@@ -267,6 +271,53 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
         }else{
             $this->apicall('POST','/chatter/comments/'. $id .'/likes');
         }
+    }
+
+    public function processText($text, $mentions) {
+        $count = preg_match_all('/\@\[(.*?)\]/i', $text, $matches, PREG_OFFSET_CAPTURE);
+        if (!$count) {
+            return array('messageSegments' => array(array('type' => 'text', 'text' => $text)));
+        }
+        $last = 0;
+        $result = array();
+        for ($i = 0; $i < $count; $i++) {
+
+            if ($matches[0][$i][1] !== $last) {
+
+                $result[] = array(
+                    'type' => 'text',
+                    'text' => substr($text, $last, $matches[0][$i][1] - $last)
+                );
+            }
+            if (isset($mentions[$matches[1][$i][0]])) {
+                $result[] = array(
+                    'type' => 'mention',
+                    'id' => $mentions[$matches[1][$i][0]]
+                );
+            } else {
+                $result[] = array(
+                    'type' => 'text',
+                    'text' => $matches[0][$i][0]
+                );
+            }
+            $last = $matches[0][$i][1] + strlen($matches[0][$i][0]);
+        }
+        if ($last != strlen($text)) {
+            $result[] = array(
+                'type' => 'text',
+                'text' => substr($text, $last)
+            );
+        }
+
+        return array('messageSegments' => $result);
+    }
+
+    private function getMentions() {
+        $mention = array();
+        if (isset($_POST['mention'])) {
+            $mention = $_POST['mention'];
+        }
+        return $mention;
     }
 }
 
