@@ -197,8 +197,7 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
      * Creates the Chatter ID if not exists, yet
      */
     public function id2chatter($id){
-        $inst = $this->getConsumerKey(); //unique key per setup
-
+        $inst = $this->getConf('consumer_key'); //unique key per setup
         $key  = p_get_metadata($id,"plugin chatter-$inst");
         if($key) return $key;
 
@@ -215,15 +214,6 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
         p_set_metadata($id,array('plugin' => array("chatter-$inst" => $key)));
 
         return $key;
-    }
-
-    private function getConsumerKey() {
-        global $conf;
-        global $auth;
-        if (is_a($auth, 'auth_sfauth')) {
-            return $conf['plugin']['sfauth']['consumer key'];
-        }
-        return $this->getConf('consumer_key');
     }
 
     /**
