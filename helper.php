@@ -212,7 +212,7 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
 
         $key = $resp['id'];
         p_set_metadata($id,array('plugin' => array("chatter-$inst" => $key)));
-
+        dbglog('created new id on ' . $id, 'chatter');
         return $key;
     }
 
