@@ -104,3 +104,8 @@
     height: 3em;
     vertical-align: top;
 }
+
+#chatter__window a.chatter_mention,
+#chatter__window a.chatter_url {
+    color: __link__;
+}

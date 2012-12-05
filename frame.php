@@ -4,9 +4,12 @@ if(!defined('DOKU_INC')) define('DOKU_INC',realpath(dirname(__FILE__).'/../../..
 require_once(DOKU_INC.'inc/init.php');
 session_write_close();
 
+/**
+ * @var helper_plugin_chatter $CHATTER
+ */
 $CHATTER = plugin_load('helper','chatter');
 $ID      = cleanID($_GET['id']);
-$CID     = $CHATTER->id2chatter($ID);
+$CID     =  $CHATTER->id2chatter($ID);
 
 
 html_header();
@@ -77,6 +80,7 @@ function html_commentform($id = false){
 
 
 function html_comments($id, $items, $comments = true){
+    global $CHATTER;
     echo '<ul>';
 
     foreach($items as $item){
@@ -88,7 +92,7 @@ function html_comments($id, $items, $comments = true){
         echo '  <div class="body">';
         echo '    <div class="inner">';
         echo        '<b class="author">'.hsc($item['actor']['name']).':</b> ';
-        echo        hsc($item['body']['text']);
+        echo        $CHATTER->bodyToText($item['body']);
         echo        '<br /><span class="date">'.dformat(strtotime($item['createdDate'])).'</span>';
 
         if ($comments && !count($item['comments']['comments'])) {

@@ -13,7 +13,7 @@ if (!defined('DOKU_INC')) die();
 
 class helper_plugin_chatter extends DokuWiki_Plugin {
     private $loginurl;
-    private $auth = null;
+    public  $auth = null;
     private $user;
     public  $authurl;
 
@@ -312,12 +312,53 @@ class helper_plugin_chatter extends DokuWiki_Plugin {
         return array('messageSegments' => $result);
     }
 
+    public function bodyToText($body) {
+        $body = $body['messageSegments'];
+        $text = '';
+        $auth = $this->getAuth();
+
+        foreach ($body as $message) {
+            if ($message['type'] === 'Mention') {
+                $text .= sprintf('<a href="%s" target="_top" class="chatter_mention">',
+                        $auth['instance_url'] . '/' . $message['user']['id']);
+                $text .= $this->weakEscape($message['name']);
+                $text .= '</a>';
+                continue;
+            }
+            if ($message['type'] === 'Link') {
+                $text .= sprintf('<a href="%s" target="_blank" class="chatter_url">', $message['url']);
+                $text .= $this->weakEscape($message['text']);
+                $text .= '</a>';
+                continue;
+            }
+            if ($message['type'] === 'Hashtag') {
+                $text .= '#';
+            }
+            $text .= $this->weakEscape($message['text']);
+        }
+        return $text;
+    }
+
+    private function getAuth() {
+        global $auth;
+        if (is_a($auth, 'auth_sfauth')) {
+            return $auth->auth;
+        }
+        return $this->auth;
+    }
+
     private function getMentions() {
         $mention = array();
         if (isset($_POST['mention'])) {
             $mention = $_POST['mention'];
         }
         return $mention;
+    }
+
+    private function weakEscape($s) {
+        $s = str_replace('<', '&lt;', $s);
+        $s = str_replace('>', '&gt;', $s);
+        return $s;
     }
 }
 
