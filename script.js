@@ -74,7 +74,7 @@ jQuery(function() {
             minLength: 0,
             source: function (request, response) {
                 jQuery.ajax({
-                    url:DOKU_BASE + '/lib/exe/ajax.php?call=chatter_autocomplete',
+                    url:DOKU_BASE + 'lib/exe/ajax.php?call=chatter_autocomplete',
                     data:{term : extractLast( request.term )},
                     dataType:"json",
                     success: function(data) {
